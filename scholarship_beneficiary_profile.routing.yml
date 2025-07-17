@@ -1,0 +1,213 @@
+# Step 1: Personal Details
+scholarship_beneficiary_profile.step1:
+  path: '/profile/personal_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Personal details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 2: Academic Details
+scholarship_beneficiary_profile.step2:
+  path: '/profile/academic_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Academic details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 3: Finance Details
+scholarship_beneficiary_profile.step3:
+  path: '/profile/finance_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Finance details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 4: Residential Details
+scholarship_beneficiary_profile.step4:
+  path: '/profile/residential_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Residential details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 5: Health Details
+scholarship_beneficiary_profile.step5:
+  path: '/profile/health_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Health details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 6: Family Details
+scholarship_beneficiary_profile.step6:
+  path: '/profile/family_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Family details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 7: Other Details
+scholarship_beneficiary_profile.step7:
+  path: '/profile/other_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Other details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Step 8: Bank Details
+scholarship_beneficiary_profile.step8:
+  path: '/profile/bank_details/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::beneFiciaryProfilerender'
+    _title: 'Beneficiary profile - Bank details'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Family Member View
+scholarship_beneficiary_profile.member_view:
+  path: 'member_view'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\FamilyMembersController::member_view'
+    _title: ''
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Family Member Delete
+scholarship_beneficiary_profile.member_delete:
+  path: 'member_delete'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\FamilyMembersController::member_delete'
+    _title: ''
+  requirements:
+    _permission: 'access content'
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access'
+
+# Final Submit Form Confirmation
+scholarship_beneficiary_profile.submit_confirmation_form:
+  path: '/submitconfirmationform/{uniqueId}'
+  defaults:
+    _form: '\Drupal\scholarship_beneficiary_profile\Form\SubmitConfirmationForm'
+    _title: 'Confirm Submission'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+  options:
+    _admin_route: FALSE
+
+# Final Submit Controller
+scholarship_beneficiary_profile.final_submit:
+  path: '/beneficiary/final-submit/{uniqueId}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\FinalSubmitController::submit'
+    uniqueId: null
+  requirements:
+    _permission: 'access content'
+
+# Content Type Migration (Install)
+scholarship_beneficiary_profile.install_migration:
+  path: '/admin/install_migration/{content_type}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::install'
+    _title: ''
+  requirements:
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access_migration'
+
+# My Mentor Tab
+scholarship_beneficiary_profile.mymentor:
+  path: '/tab/my-mentor'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\TabsRedirectionController::renderMentorPage'
+    _title: 'My mentor'
+  requirements:
+    _permission: 'access content'
+
+# Training Tab
+scholarship_beneficiary_profile.training:
+  path: '/tab/training'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\TabsRedirectionController::renderTrainingPage'
+    _title: 'Training'
+  requirements:
+    _permission: 'access content'
+
+# Event Tab
+scholarship_beneficiary_profile.event:
+  path: '/tab/event'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\TabsRedirectionController::renderEventPage'
+    _title: 'Events'
+  requirements:
+    _permission: 'access content'
+
+# Taxonomy Migration (Specific Course)
+scholarship_beneficiary_profile.taxonomy_migration:
+  path: '/admin/install_migration/taxonomy/courses'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::addTaxonomyDynamically_courses'
+    _title: ''
+  requirements:
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access_migration'
+
+# Taxonomy Migration (General)
+scholarship_beneficiary_profile.taxonomy_migration_2:
+  path: '/admin/install_migration/taxonomy/{status}/{die}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::addTaxonomyDynamically'
+    _title: ''
+    status: ''
+    die: ''
+  requirements:
+    _custom_access: '\Drupal\scholarship_beneficiary_profile\Routing\Access\AccessCheck::access_migration'
+
+# Taxonomy Term Name View
+user_assignment_manager.taxonomy_term_name:
+  path: '/taxonomy/{id}'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::getTermName'
+    _title: 'Get Taxonomy Name'
+  requirements:
+    _permission: 'access content'
+    id: \d+
+  methods: [GET]
+
+# Create Vocabularies
+scholarship_beneficiary_profile.create_vocabs:
+  path: '/admin/taxonomy-tools/create-vocab'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::createVocabs'
+    _title: 'Create Vocabularies'
+  requirements:
+    _permission: 'administer taxonomy'
+
+# Delete Vocabularies
+scholarship_beneficiary_profile.delete_vocabs:
+  path: '/admin/taxonomy-tools/delete-vocab'
+  defaults:
+    _controller: '\Drupal\scholarship_beneficiary_profile\Controller\ScholarshipContentTypeMigrationController::deleteVocabs'
+    _title: 'Delete Vocabularies'
+  requirements:
+    _permission: 'administer taxonomy'
