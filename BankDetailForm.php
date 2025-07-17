@@ -1,0 +1,272 @@
+<?php
+
+namespace Drupal\scholarship_beneficiary_profile\Form;
+
+use Drupal\node\Entity\Node;
+use Drupal\scholarship_beneficiary_profile\Service\MigrationService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
+/**
+ * Provides the form for the Bank Details section of the scholarship beneficiary profile.
+ *
+ * @package Drupal\scholarship_beneficiary_profile\Form
+ */
+class BankDetailForm extends MultiStepFormBase
+{
+  /**
+   * The MigrationService instance.
+   *
+   * @var \Drupal\scholarship_beneficiary_profile\Service\MigrationService
+   */
+  protected $migrationService;
+
+  /**
+   * Constructs a new BankDetailForm.
+   *
+   * @param \Drupal\scholarship_beneficiary_profile\Service\MigrationService $migrationService
+   *   The migration service.
+   */
+  public function __construct(MigrationService $migrationService)
+  {
+    $this->migrationService = $migrationService;
+  }
+
+  /**
+   * Creates an instance of the form from the container.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The service container.
+   *
+   * @return static
+   *   The form instance.
+   */
+  public static function create(ContainerInterface $container)
+  {
+    return new static(
+      $container->get('scholarship_beneficiary_profile.migration_service')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId()
+  {
+    return "bank_details";
+  }
+
+  /**
+   * Builds the form for the bank details section.
+   *
+   * Dynamically generates the form fields based on the available fields and
+   * any existing values in the database for the current user.
+   *
+   * @param array $form
+   *   The existing form structure.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   * @param string|null $uniqueId
+   *   The unique ID of the user (optional).
+   *
+   * @return array
+   *   The form array.
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $uniqueId = null)
+  {
+    $form_state->set('uniqueId', $uniqueId);
+    $current_user = \Drupal::currentUser();
+    $id = $uniqueId ?? $current_user->id(); 
+
+    if ($uniqueId && empty(array_intersect(['administrator'], $current_user->getRoles()))) {
+      throw new AccessDeniedHttpException();
+    }
+
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', $this->getFormId())
+      ->condition('user_reference_id', $id)
+      ->accessCheck(FALSE);
+
+    $class = 'form-col col-lg-3 col-md-6 col-sm-12';
+    $fields = $this->migrationService->getallContentTypesFieldsDetails($class, $this->getFormId());
+    $nids = $query->execute();
+
+    if (!empty($nids)) {
+      $nid = reset($nids);
+      $node = Node::load($nid);
+      if ($node) {
+        foreach ($fields as $field_key => $field_value) {
+          $field_key = $field_value['name'];
+          if ($node->hasField($field_key)) {
+            if (in_array($field_key, ['field_statement_of_account_or_pa', 'field_statement_of_account_or_mo', 'field_student_s_bank_passbook_ph'])) {
+              $node->get($field_key)->value = $node->get($field_key)->target_id;
+            }
+            $form_state->setValue($field_key, $node->get($field_key)->value);
+          }
+        }
+      }
+    }
+
+    $is_disabled = FALSE;
+    if ($node && $node->hasField('unique_id') && !$node->get('unique_id')->isEmpty()) {
+      $is_disabled = TRUE;
+      if ($uniqueId) {
+        $is_disabled = FALSE;
+      }
+    }
+
+    $steps = $this->migrationService->getcontentTypeList();
+    $step = $steps[$this->getFormId()];
+    $form = $this->formDisplayConfigurationBycck($fields, $form_state, $step, $uniqueId);
+
+    $wrapperfields = [
+      'field_student_s_bank_passbook_ph',
+      'field_statement_of_account_or_pa',
+      'field_statement_of_account_or_mo',
+    ];
+
+    foreach ($wrapperfields as $field_name) {
+      if (in_array($field_name, ['field_student_s_bank_passbook_ph', 'field_statement_of_account_or_pa', 'field_statement_of_account_or_mo'])) {
+        $class = 'col-lg-9 col-md-9 col-sm-12';
+      }
+
+      $form[$field_name]['#wrapper_attributes'] = ['class' => $class];
+    }
+
+    $form['field_account_name']['#prefix'] = '<div class="row g-3">';
+    $form['field_branch_name']['#suffix'] = '</div><h5 class="mb-3">Documents:</h5><div class="finance-document-section">';
+    $form['actions']['#type'] = 'actions';
+    $form['actions']['next'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Save'),
+      '#attributes' => ['class' => ['outline-purple', 'mt-4']],
+      '#prefix' => '</div>'
+    ];
+    unset($form['unique_id']);
+    unset($form['user_reference_id']);
+    $form_state->setRebuild(TRUE);
+
+    if ($is_disabled) {
+      foreach ($form as $key => &$element) {
+        if (is_array($element) && isset($element['#type']) && $element['#type'] !== 'submit') {
+          $element['#disabled'] = TRUE;
+        }
+      }
+      $form['actions']['next']['#disabled'] = TRUE;
+    }
+
+    return $form;
+  }
+
+  /**
+   * Validates the form data for the bank details form.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state)
+  {
+    $validation_rules = $this->allinonejson();
+    $form_fields = $form_state->getValues();
+
+    foreach ($form_fields as $field_name => $field_value) {
+      if (array_key_exists($field_name, $validation_rules)) {
+        if (!empty($validation_rules[$field_name]['required']) && empty($field_value)) {
+          $form_state->setErrorByName($field_name, $validation_rules['error_message']);
+        }
+        if (!empty($validation_rules[$field_name]['regex']) && !preg_match($validation_rules[$field_name]['regex'], $field_value)) {
+          $form_state->setErrorByName($field_name, $validation_rules[$field_name]['error_message']);
+        }
+        if ($field_name == 'field_confirmed_account_number') {
+          $account_number = $form_state->getValue('field_account_number');
+          $confirm_account_number = $form_state->getValue('field_confirmed_account_number');
+          if (!empty($account_number) && !empty($confirm_account_number) && $account_number !== $confirm_account_number) {
+            $form_state->setErrorByName('field_confirmed_account_number', $this->t('Account number and confirmed account number must match.'));
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Submits the bank details form data.
+   *
+   * Saves the data from the bank details form to the node associated
+   * with the current user. If no existing node is found, a new node is created.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state)
+  {
+    $data = $form_state->getValues();
+    $uniqueId = $form_state->get('uniqueId');
+    $current_user = \Drupal::currentUser();
+    $id = $uniqueId ?? $current_user->id(); 
+
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', $this->getFormId())
+      ->condition('user_reference_id', $id)
+      ->accessCheck(FALSE);
+
+    $nids = $query->execute();
+    $nid = reset($nids);
+
+    if ($nid) {
+      $node = Node::load($nid);
+      if (!$node) {
+        return;
+      }
+    } else {
+      $node = Node::create(['type' => $this->getFormId()]);
+      $node->set('title', $this->getFormId());
+    }
+
+    $fields = $this->migrationService->getallContentTypesFieldsDetails('', $this->getFormId());
+    foreach ($fields as $field_key => $field_value) {
+      $field_key = $field_value['name'];
+      if (isset($data[$field_key])) {
+        $Getfilefield = $this->file_fileds_array();
+        if ($field_key == $Getfilefield[$field_key] && !empty($data[$Getfilefield[$field_key]])) {
+          $document = File::load($data[$field_key][0]);
+          $document->setPermanent();
+          $document->save();
+          $node->set($field_key, $data[$field_key]);
+        }
+        if (is_array($data[$field_key])) {
+          $node->set($field_key, $data[$field_key]);
+        } else {
+          $node->set($field_key, trim($data[$field_key]));
+        }
+      }
+    }
+
+    $node->setOwnerId($id);
+    $node->set('user_reference_id', $id);
+    $node->save();
+
+    \Drupal::messenger()->addMessage($this->t('Your data has been saved successfully.'));
+    $form_state->setRedirect('scholarship_beneficiary_profile.step7', ['uniqueId' => $uniqueId]);
+  }
+
+  /**
+   * Returns an array of file fields.
+   *
+   * @return array
+   *   An array of file field names.
+   */
+  function file_fileds_array()
+  {
+    return [
+      'field_statement_of_account_or_pa' => 'field_statement_of_account_or_pa',
+      'field_statement_of_account_or_mo' => 'field_statement_of_account_or_mo',
+      'field_student_s_bank_passbook_ph' => 'field_student_s_bank_passbook_ph',
+    ];
+  }
+}
